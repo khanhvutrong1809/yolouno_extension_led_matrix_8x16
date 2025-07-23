@@ -1,7 +1,6 @@
 <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
   <category name="LED MATRIX" colour="#5d2c91" icon="h-square">
     <block type="uno_led_matrix_create"/>
-    <block type="uno_led_matrix_show_adv_image" />
     <block type="uno_led_matrix_show_image" />
     <block type="uno_led_matrix_display">
         <value name="value">
