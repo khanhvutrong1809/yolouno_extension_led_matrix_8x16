@@ -141,12 +141,11 @@ Blockly.Blocks["uno_led_matrix_display"] = {
       nextStatement: null,
       tooltip: '',
       message0: 'led matrix hiện giá trị %1 %2',
+      previousStatement: null,
       args0: [
         { type: "input_value", name: "value" },
         { type: "input_dummy" },
       ],
-      previousStatement: null,
-      nextStatement: null,
       helpUrl: ''
     });
   },
@@ -155,33 +154,76 @@ Blockly.Blocks["uno_led_matrix_display"] = {
   },
 };
 
+// Khối mới: uno_led_matrix_scan
 Blockly.Blocks["uno_led_matrix_scan"] = {
   init: function () {
     this.jsonInit({
-      colour: LEDMATRIX16x8ColorBlock,
-      nextStatement: null,
-      tooltip: 'Quét toàn bộ ma trận, từng hàng hoặc từng cột',
-      message0: 'led matrix quét %1',
+      type: "uno_led_matrix_scan",
+      message0: "led matrix quét LED với độ trễ %1 ms",
       args0: [
         {
-          type: "field_dropdown",
-          name: "SCAN_TYPE",
-          options: [
-            ["toàn bộ", "all"],
-            ["từng hàng", "row"],
-            ["từng cột", "col"]
-          ]
+          type: "field_number",
+          name: "DELAY",
+          value: 50, // Giá trị mặc định cho độ trễ
+          min: 1,
+          precision: 1,
         },
       ],
       previousStatement: null,
-      nextStatement: null, // Đảm bảo có nextStatement nếu khối có thể có khối phía sau
-      helpUrl: ''
+      nextStatement: null,
+      colour: LEDMATRIX16x8ColorBlock,
+      tooltip: "Bật từng đèn LED một trên ma trận.",
+      helpUrl: "",
     });
   },
   getDeveloperVars: function () {
     return ["led_matrix"];
   },
 };
+
+// Khối mới: uno_led_matrix_test_led
+Blockly.Blocks["uno_led_matrix_test_led"] = {
+  init: function () {
+    this.jsonInit({
+      type: "uno_led_matrix_test_led",
+      message0: "led matrix bật LED tại hàng %1 cột %2 trong %3 ms",
+      args0: [
+        {
+          type: "field_number",
+          name: "ROW",
+          value: 0, // Giá trị mặc định
+          min: 0,
+          max: 7, // 8 hàng (0-7)
+          precision: 1,
+        },
+        {
+          type: "field_number",
+          name: "COL",
+          value: 0, // Giá trị mặc định
+          min: 0,
+          max: 15, // 16 cột (0-15)
+          precision: 1,
+        },
+        {
+          type: "field_number",
+          name: "DURATION",
+          value: 500, // Giá trị mặc định cho thời gian bật LED
+          min: 1,
+          precision: 1,
+        },
+      ],
+      previousStatement: null,
+      nextStatement: null,
+      colour: LEDMATRIX16x8ColorBlock,
+      tooltip: "Bật một đèn LED cụ thể tại vị trí hàng và cột được chỉ định.",
+      helpUrl: "",
+    });
+  },
+  getDeveloperVars: function () {
+    return ["led_matrix"];
+  },
+};
+
 
 // Python
 
@@ -214,8 +256,18 @@ Blockly.Python['uno_led_matrix_display'] = function (block) {
   return code;
 };
 
+// Trình tạo Python mới cho khối uno_led_matrix_scan
 Blockly.Python['uno_led_matrix_scan'] = function (block) {
-  var scan_type = block.getFieldValue('SCAN_TYPE');
-  var code = 'led_matrix.scan(type="' + scan_type + '")\n';
+  var delay = block.getFieldValue('DELAY');
+  var code = 'led_matrix.scan_leds(' + delay + ')\n';
+  return code;
+};
+
+// Trình tạo Python mới cho khối uno_led_matrix_test_led
+Blockly.Python['uno_led_matrix_test_led'] = function (block) {
+  var row = block.getFieldValue('ROW');
+  var col = block.getFieldValue('COL');
+  var duration = block.getFieldValue('DURATION');
+  var code = 'led_matrix.test_individual_led(' + row + ', ' + col + ', ' + duration + ')\n';
   return code;
 };
