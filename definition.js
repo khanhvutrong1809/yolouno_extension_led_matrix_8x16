@@ -159,7 +159,7 @@ Blockly.Blocks["uno_led_matrix_scan"] = {
     this.jsonInit({
       colour: LEDMATRIX16x8ColorBlock,
       nextStatement: null,
-      tooltip: 'Quét toàn bộ ma trận, từng hàng hoặc từng cột',
+      tooltip: 'Click vào để chọn chế độ',
       message0: 'led matrix quét %1',
       args0: [
         {
