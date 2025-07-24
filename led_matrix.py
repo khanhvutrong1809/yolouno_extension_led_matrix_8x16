@@ -222,3 +222,38 @@ class LedMatrix:
 
     def clear(self):
         self.tm1640.write(Image.NONE)
+
+    def scan(self, type="all", delay=50):
+        """
+        Scans the LED matrix.
+        type: "all" (scan entire matrix), "row" (scan each row), "col" (scan each column)
+        delay: delay in milliseconds between steps
+        """
+        self.clear()
+        if type == "all":
+            for i in range(16):
+                scan_data = [0x00] * 16
+                scan_data[i] = 0xFF # Turn on all LEDs in the column
+                self.tm1640.write(scan_data)
+                time.sleep_ms(delay)
+            self.clear()
+            for i in range(8):
+                scan_data = [0x00] * 16
+                for j in range(16):
+                    scan_data[j] = (1 << i) # Turn on one row
+                self.tm1640.write(scan_data)
+                time.sleep_ms(delay)
+        elif type == "row":
+            for i in range(8):
+                scan_data = [0x00] * 16
+                for j in range(16):
+                    scan_data[j] = (1 << i) # Turn on one row
+                self.tm1640.write(scan_data)
+                time.sleep_ms(delay)
+        elif type == "col":
+            for i in range(16):
+                scan_data = [0x00] * 16
+                scan_data[i] = 0xFF # Turn on all LEDs in the column
+                self.tm1640.write(scan_data)
+                time.sleep_ms(delay)
+        self.clear()
