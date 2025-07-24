@@ -231,12 +231,14 @@ class LedMatrix:
         """
         self.clear()
         if type == "all":
+            # Scan columns
             for i in range(16):
                 scan_data = [0x00] * 16
                 scan_data[i] = 0xFF # Turn on all LEDs in the column
                 self.tm1640.write(scan_data)
                 time.sleep_ms(delay)
             self.clear()
+            # Scan rows
             for i in range(8):
                 scan_data = [0x00] * 16
                 for j in range(16):
