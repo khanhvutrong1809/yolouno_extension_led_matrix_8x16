@@ -2,8 +2,8 @@ import time
 import tm1640
 import machine
 
-from setting import *
-from utility import *
+# from setting import * # Có thể gây lỗi nếu không có tệp này
+# from utility import * # Có thể gây lỗi nếu không có tệp này
 
 class Image:
     HEART = [0x00,0x00,0x00,0x0c,0x1e,0x3e,0x7e,0xfc, 0xfc,0x7e,0x3e,0x1e,0x0c,0x00,0x00,0x00]
@@ -131,8 +131,7 @@ class LedMatrix:
         self.list_scroll.extend(image)
         self.list_scroll_temp.extend(image)
         
-        if dir == 0:
-            #scroll right to left
+        if dir == 0: # Cuộn từ phải sang trái
             for i in range(8):
                 self.list_scroll.pop(0)
                 self.list_scroll.append(Image.PADDING[0])
@@ -145,8 +144,7 @@ class LedMatrix:
                 self.list_scroll.append(temp)
                 self.tm1640.write(self.list_scroll)
                 time.sleep_ms(delay)
-        else:
-            #scroll left to right 
+        else: # Cuộn từ trái sang phải
             for i in range(16):
                 temp = Image.PADDING[0]
                 self.list_scroll.pop()
@@ -179,7 +177,6 @@ class LedMatrix:
                 self.list_show.clear()
 
     def scroll(self, input, dir = 0, delay = 100):
-
         if type(input) is list:
             self._scroll_image(input, dir, delay)
         else:
@@ -192,7 +189,7 @@ class LedMatrix:
             len_str =  len(output)
             count = len_str*8 + 18 
             self.list_scroll_temp.clear()
-            if dir == 0:
+            if dir == 0: # Cuộn từ phải sang trái
                 while count > 0:
                     count = count - 1               
                     self.list_scroll_temp.extend(self.list_scroll[0:16])
@@ -201,7 +198,7 @@ class LedMatrix:
                     self.tm1640.write(self.list_scroll_temp)
                     self.list_scroll_temp.clear()
                     time.sleep_ms(delay)
-            else:
+            else: # Cuộn từ trái sang phải
                 while count > 0:
                     count = count - 1
                     self.list_scroll_temp.extend(self.list_scroll[(len_str*8 + 16):(len_str*8 + 32)])
@@ -223,39 +220,30 @@ class LedMatrix:
     def clear(self):
         self.tm1640.write(Image.NONE)
 
-    def scan(self, type="all", delay=50):
+    def scan_leds(self, delay=50):
+        self.clear() # Đảm bảo màn hình trống trước khi bắt đầu quét
+        for row in range(8):
+            for col in range(16):
+                display_data = [0x00] * 16
+                display_data[col] = 1 << row
+                self.tm1640.write(display_data)
+                time.sleep_ms(delay)
+        self.clear() # Xóa ma trận sau khi quét
+
+    def test_individual_led(self, row, col, duration=500):
         """
-        Scans the LED matrix.
-        type: "all" (scan entire matrix), "row" (scan each row), "col" (scan each column)
-        delay: delay in milliseconds between steps
+        Bật một đèn LED cụ thể tại vị trí (hàng, cột).
+        row: Hàng của đèn LED (0-7)
+        col: Cột của đèn LED (0-15)
+        duration: Thời gian đèn LED sáng (miliseconds)
         """
-        self.clear()
-        if type == "all":
-            # Scan columns
-            for i in range(16):
-                scan_data = [0x00] * 16
-                scan_data[i] = 0xFF # Turn on all LEDs in the column
-                self.tm1640.write(scan_data)
-                time.sleep_ms(delay)
-            self.clear()
-            # Scan rows
-            for i in range(8):
-                scan_data = [0x00] * 16
-                for j in range(16):
-                    scan_data[j] = (1 << i) # Turn on one row
-                self.tm1640.write(scan_data)
-                time.sleep_ms(delay)
-        elif type == "row":
-            for i in range(8):
-                scan_data = [0x00] * 16
-                for j in range(16):
-                    scan_data[j] = (1 << i) # Turn on one row
-                self.tm1640.write(scan_data)
-                time.sleep_ms(delay)
-        elif type == "col":
-            for i in range(16):
-                scan_data = [0x00] * 16
-                scan_data[i] = 0xFF # Turn on all LEDs in the column
-                self.tm1640.write(scan_data)
-                time.sleep_ms(delay)
-        self.clear()
+        if not (0 <= row <= 7 and 0 <= col <= 15):
+            print("Lỗi: Vị trí hàng hoặc cột không hợp lệ.")
+            return
+
+        self.clear() # Đảm bảo màn hình trống trước khi bật LED mới
+        display_data = [0x00] * 16
+        display_data[col] = 1 << row
+        self.tm1640.write(display_data)
+        time.sleep_ms(duration)
+        self.clear() # Tắt đèn LED sau khi kiểm tra
