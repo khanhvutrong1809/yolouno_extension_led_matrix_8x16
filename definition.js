@@ -154,6 +154,33 @@ Blockly.Blocks["uno_led_matrix_display"] = {
   },
 };
 
+Blockly.Blocks["uno_led_matrix_scan"] = {
+  init: function () {
+    this.jsonInit({
+      colour: LEDMATRIX16x8ColorBlock,
+      nextStatement: null,
+      tooltip: 'Quét toàn bộ ma trận, từng hàng hoặc từng cột',
+      message0: 'led matrix quét %1',
+      args0: [
+        {
+          type: "field_dropdown",
+          name: "SCAN_TYPE",
+          options: [
+            ["toàn bộ", "all"],
+            ["từng hàng", "row"],
+            ["từng cột", "col"]
+          ]
+        },
+      ],
+      previousStatement: null,
+      helpUrl: ''
+    });
+  },
+  getDeveloperVars: function () {
+    return ["led_matrix"];
+  },
+};
+
 // Python
 
 Blockly.Python["uno_led_matrix_create"] = function (block) {
@@ -182,5 +209,11 @@ Blockly.Python['uno_led_matrix_show_image'] = function (block) {
 Blockly.Python['uno_led_matrix_display'] = function (block) {
   var value_text = Blockly.Python.valueToCode(block, 'value', Blockly.Python.ORDER_MEMBER);
   var code = 'led_matrix.show(' + value_text + ')\n';
+  return code;
+};
+
+Blockly.Python['uno_led_matrix_scan'] = function (block) {
+  var scan_type = block.getFieldValue('SCAN_TYPE');
+  var code = 'led_matrix.scan(type="' + scan_type + '")\n';
   return code;
 };
