@@ -3,12 +3,12 @@
     <block type="uno_led_matrix_create"/>
     <block type="uno_led_matrix_show_adv_image" />
     <block type="uno_led_matrix_display">
-    <block type="uno_led_matrix_scan"/>
         <value name="value">
           <shadow type="text">
             <field name="TEXT">0</field>
           </shadow>
         </value>
       </block>
+    <block type="uno_led_matrix_scan"/>
   </category>
 </xml>
