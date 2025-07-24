@@ -141,11 +141,12 @@ Blockly.Blocks["uno_led_matrix_display"] = {
       nextStatement: null,
       tooltip: '',
       message0: 'led matrix hiện giá trị %1 %2',
-      previousStatement: null,
       args0: [
         { type: "input_value", name: "value" },
         { type: "input_dummy" },
       ],
+      previousStatement: null,
+      nextStatement: null,
       helpUrl: ''
     });
   },
@@ -159,7 +160,7 @@ Blockly.Blocks["uno_led_matrix_scan"] = {
     this.jsonInit({
       colour: LEDMATRIX16x8ColorBlock,
       nextStatement: null,
-      tooltip: 'Click vào để chọn chế độ',
+      tooltip: 'Quét toàn bộ ma trận, từng hàng hoặc từng cột',
       message0: 'led matrix quét %1',
       args0: [
         {
@@ -173,6 +174,7 @@ Blockly.Blocks["uno_led_matrix_scan"] = {
         },
       ],
       previousStatement: null,
+      nextStatement: null, // Đảm bảo có nextStatement nếu khối có thể có khối phía sau
       helpUrl: ''
     });
   },
