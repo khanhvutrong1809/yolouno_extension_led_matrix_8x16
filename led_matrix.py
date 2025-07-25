@@ -237,7 +237,7 @@ class LedMatrix:
         col: Cột của đèn LED (0-15)
         duration: Thời gian đèn LED sáng (miliseconds)
         """
-        if not (0 <= row <= 7 and 0 <= col <= 15):
+        if not (1 <= row <= 8 and 1 <= col <= 16):
             print("Lỗi: Vị trí hàng hoặc cột không hợp lệ.")
             return
 
