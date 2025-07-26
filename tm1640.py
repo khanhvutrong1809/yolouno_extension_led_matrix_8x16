@@ -85,36 +85,55 @@ class TM1640:
         self._stop()
         self._write_dsp_ctrl()
 
-    # Phương thức mới để xử lý việc hoán đổi hàng và cột
+    def _map_row(self, row):
+        """
+        Ánh xạ hàng logic sang hàng vật lý trên ma trận.
+        Hoán đổi hàng 6 và hàng 7.
+        """
+        if row == 6:
+            return 7
+        elif row == 7:
+            return 6
+        return row
+
     def set_pixel(self, row, col, val):
         """
-        Sets a pixel at the specified row and column.
+        Sets a pixel at the specified row and column, applying row mapping.
         row: 0-7 (for 8 rows)
         col: 0-15 (for 16 columns)
         val: 0 for off, 1 for on
         """
-        # Kiểm tra giới hạn
         if not (0 <= row < 8 and 0 <= col < 16):
             return
 
-        # Khi chân bị hoán đổi, 'col' thực tế là chỉ mục byte trong buffer (cột)
-        # và 'row' thực tế là bit trong byte đó (hàng).
+        # Áp dụng ánh xạ hàng
+        mapped_row = self._map_row(row)
+
         if val:
-            self.buffer[col] |= (1 << row)
+            self.buffer[col] |= (1 << mapped_row)
         else:
-            self.buffer[col] &= ~(1 << row)
+            self.buffer[col] &= ~(1 << mapped_row)
 
     def draw_bitmap(self, data):
         """
-        Draws a 8x16 bitmap. `data` should be a 16-byte bytearray or list.
+        Draws an 8x16 bitmap. `data` should be a 16-byte bytearray or list.
         Each byte in `data` represents a column, and each bit in the byte
         represents a row (LSB for row 0, MSB for row 7).
+        This method will also apply the row mapping defined in _map_row.
         """
-        for i in range(min(16, len(data))):
-            self.buffer[i] = data[i]
-        self.show()
+        self.clear() # Clear before drawing
+        for col in range(min(16, len(data))):
+            col_byte = data[col]
+            for row in range(8):
+                if (col_byte >> row) & 1: # If the bit for the original row is set
+                    self.set_pixel(row, col, 1) # Use set_pixel which applies the mapping
+        self.show() # Call show once after drawing all pixels
 
     def scroll_left(self):
+        # Logic for scrolling bytes as a whole.
+        # The row mapping is handled by set_pixel when drawing,
+        # but the scroll operation itself moves entire column bytes.
+        # This means the *content* of the rows will be swapped as they scroll.
         for i in range(15):
             self.buffer[i] = self.buffer[i + 1]
         self.buffer[15] = 0
@@ -130,8 +149,17 @@ class TM1640:
         """
         Draws an 8x8 character bitmap. `char_data` should be an 8-byte list/bytearray.
         `pos` is the starting column (0-15).
+        This method will apply the row mapping defined in _map_row.
         """
-        for i in range(min(8, len(char_data))):
-            if pos + i < 16:
-                self.buffer[pos + i] = char_data[i]
-        self.show()
+        # Iterate through the columns of the character data
+        for col_offset in range(min(8, len(char_data))):
+            current_col = pos + col_offset
+            if current_col < 16:
+                col_byte = char_data[col_offset]
+                # For each bit (row) in the character column, set the pixel
+                for row in range(8):
+                    if (col_byte >> row) & 1:
+                        self.set_pixel(row, current_col, 1)
+                    else:
+                        self.set_pixel(row, current_col, 0) # Ensure old pixels are turned off
+        self.show() # Call show once after drawing all pixels
