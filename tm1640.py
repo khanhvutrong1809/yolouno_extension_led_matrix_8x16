@@ -76,17 +76,17 @@ class TM1640(object):
         self.write(int.to_bytes(len, 'big'), pos)
 
     def write_hmsb(self, buf, pos=0):
-        # Create a copy of the buffer to modify
-        modified_buf = list(buf)
-        
-        # Swap rows 7 and 8 if they are within the buffer range
-        if len(modified_buf) > 8:  # Ensure there are enough rows
-            modified_buf[7], modified_buf[8] = modified_buf[8], modified_buf[7]
-
         self._write_data_cmd()
         self._start()
 
         self._write_byte(TM1640_CMD2 | pos)
+        # Tạo buffer mới để đảo hàng 7 và 8
+        modified_buf = list(buf)
+        if len(buf) >= 8:
+            # Đảo dữ liệu của hàng 7 (buf[1]) và hàng 8 (buf[0])
+            modified_buf[0], modified_buf[1] = modified_buf[1], modified_buf[0]
+        
+        # Ghi dữ liệu từ vị trí 7-pos về 0
         for i in range(7-pos, -1, -1):
             self._write_byte(modified_buf[i])
 
@@ -97,18 +97,11 @@ class TM1640(object):
         if not 0 <= pos <= 15:
             raise ValueError("Position out of range")
 
-        # Create a copy of the buffer to modify
-        modified_rows = list(rows)
-        
-        # Swap rows 7 and 8 if they are within the buffer range
-        if len(modified_rows) > 8:  # Ensure there are enough rows
-            modified_rows[7], modified_rows[8] = modified_rows[8], modified_rows[7]
-
         self._write_data_cmd()
         self._start()
 
         self._write_byte(TM1640_CMD2 | pos)
-        for row in modified_rows:
+        for row in rows:
             self._write_byte(row)
 
         self._stop()
