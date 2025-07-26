@@ -336,3 +336,13 @@ Blockly.Python['uno_led_matrix_test_led'] = function (block) {
   var code = 'led_matrix.test_individual_led(' + row + ', ' + col + ', ' + duration + ')\n';
   return code;
 };
+Blockly.Python["uno_led_matrix_blink_image"] = function (block) {
+  var matrix_image = block.getFieldValue("matrix_image");
+  var delay = block.getFieldValue("DELAY");
+  var times = block.getFieldValue("TIMES");
+
+  matrix_image = `[${matrix_image.toString()}]`; // Chuyển đổi mảng byte hình ảnh thành chuỗi Python
+
+  var code = `led_matrix.blink_image(${matrix_image}, ${delay}, ${times})\n`;
+  return code;
+};
