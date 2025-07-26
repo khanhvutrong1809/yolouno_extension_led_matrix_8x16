@@ -91,14 +91,14 @@ Blockly.Blocks["uno_led_matrix_create"] = {
     return ["led_matrix"];
   },
 };
-
 Blockly.Blocks["uno_led_matrix_show_adv_image"] = {
   init: function () {
     this.jsonInit({
       colour: LEDMATRIX16x8ColorBlock,
-      nextStatement: true, // Đặt thành true để cho phép kết nối xuống dưới
-      tooltip: 'Click vào để thay đổi hình ảnh, sau đó chọn số lần nhấp nháy và độ trễ.',
-      message0: 'led matrix hiện hình ảnh %1 chớp tắt %2 lần với độ trễ %3 ms',
+      nextStatement: null,
+      tooltip: 'Click vào để thay đổi hình ảnh',
+      message0: 'led matrix hiện hình ảnh %1',
+      previousStatement: null,
       args0: [
         {
           type: "field_matrix_image",
@@ -109,20 +109,6 @@ Blockly.Blocks["uno_led_matrix_show_adv_image"] = {
           cols: 16,
           rows: 8,
           alt: "*",
-        },
-        {
-          type: "field_number",
-          name: "BLINK_COUNT",
-          value: 3,
-          min: 0,
-          precision: 1,
-        },
-        {
-          type: "field_number",
-          name: "BLINK_DELAY",
-          value: 200,
-          min: 1,
-          precision: 1,
         },
       ],
       helpUrl: ''
