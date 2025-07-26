@@ -268,7 +268,22 @@ class LedMatrix:
                 time.sleep_ms(delay)
                 self.tm1640.set_pixel(row, col, 0) # Tắt pixel
         self.clear()
+    def blink_image(self, image_data, delay_ms, times):
+        """
+        Nhấp nháy một hình ảnh trên ma trận LED.
 
+        Args:
+            image_data (list): Danh sách các byte đại diện cho hình ảnh (16 byte cho 16x8).
+            delay_ms (int): Thời gian giữa các lần bật/tắt (mili giây).
+            times (int): Số lần nhấp nháy.
+        """
+        print(f"Nhấp nháy hình ảnh: {image_data}, độ trễ: {delay_ms}ms, số lần: {times}")
+        for _ in range(times):
+            self.show(image_data)
+            time.sleep_ms(delay_ms)
+            self.clear() # Tắt đèn
+            time.sleep_ms(delay_ms)
+        self.show(image_data) # Đảm bảo hình ảnh cuối cùng được hiển thị sau khi nhấp nháy
     def test_individual_led(self, row, col, duration=500):
         """
         Bật một đèn LED cụ thể tại vị trí (hàng, cột).
