@@ -237,12 +237,44 @@ Blockly.Python["uno_led_matrix_create"] = function (block) {
   return code;
 };
 
-Blockly.Python['uno_led_matrix_show_adv_image'] = function (block) {
-  var matrix_image = block.getFieldValue('matrix_image');
-  matrix_image = `[${matrix_image.toString()}]`;
-  var code = 'led_matrix.show(' + matrix_image + ')\n';
-  return code;
+Blockly.Blocks["uno_led_matrix_show_adv_image"] = {
+  init: function () {
+    this.jsonInit({
+      colour: LEDMATRIX16x8ColorBlock,
+      nextStatement: null,
+      tooltip: 'Click vào để thay đổi hình ảnh, sau đó chọn số lần nhấp nháy và độ trễ.', // Cập nhật tooltip
+      message0: 'led matrix hiện hình ảnh %1 chớp tắt %2 lần với độ trễ %3 ms', // Cập nhật message0
+      args0: [
+        {
+          type: "field_matrix_image",
+          name: "matrix_image",
+          src: [0, 0, 0, 0, 60, 66, 149, 161, 161, 149, 66, 60, 0, 0, 0, 0],
+          width: 50,
+          height: 25,
+          cols: 16,
+          rows: 8,
+          alt: "*",
+        },
+        {
+          type: "field_number", // Thêm trường số cho số lần nhấp nháy
+          name: "BLINK_COUNT",
+          value: 3, // Giá trị mặc định: 3 lần nhấp nháy
+          min: 0,
+          precision: 1,
+        },
+        {
+          type: "field_number", // Thêm trường số cho độ trễ nhấp nháy
+          name: "BLINK_DELAY",
+          value: 200, // Giá trị mặc định: 200 ms
+          min: 1,
+          precision: 1,
+        },
+      ],
+      helpUrl: ''
+    });
+  },
 };
+
 
 Blockly.Python['uno_led_matrix_show_image'] = function (block) {
   var value_image = Blockly.Python.valueToCode(block, 'image', Blockly.Python.ORDER_MEMBER);
