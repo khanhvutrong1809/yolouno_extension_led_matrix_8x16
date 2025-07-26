@@ -204,7 +204,52 @@ Blockly.Blocks["uno_led_matrix_scan"] = {
   },
 
 };
-
+Blockly.Blocks["uno_led_matrix_blink_image"] = {
+  /**
+   * Khối để nhấp nháy hình ảnh.
+   * @this Blockly.Block
+   */
+  init: function () {
+    this.jsonInit({
+      type: "uno_led_matrix_blink_image",
+      message0: "led matrix nhấp nháy hình ảnh %1 trong %2 ms, lặp lại %3 lần",
+      args0: [
+        {
+          type: "field_matrix_image",
+          name: "matrix_image",
+          src: [0, 0, 0, 0, 60, 66, 149, 161, 161, 149, 66, 60, 0, 0, 0, 0], // Giá trị mặc định hoặc hình ảnh mẫu
+          width: 50,
+          height: 25,
+          cols: 16,
+          rows: 8,
+          alt: "*",
+        },
+        {
+          type: "field_number",
+          name: "DELAY",
+          value: 100, // Giá trị mặc định cho độ trễ nhấp nháy
+          min: 1,
+          precision: 1,
+        },
+        {
+          type: "field_number",
+          name: "TIMES",
+          value: 3, // Giá trị mặc định cho số lần lặp lại
+          min: 1,
+          precision: 1,
+        },
+      ],
+      previousStatement: null,
+      nextStatement: null,
+      colour: LEDMATRIX16x8ColorBlock,
+      tooltip: "Nhấp nháy một hình ảnh trên ma trận LED.",
+      helpUrl: "",
+    });
+  },
+  getDeveloperVars: function () {
+    return ["led_matrix"];
+  },
+};
 // Khối mới: uno_led_matrix_test_led
 Blockly.Blocks["uno_led_matrix_test_led"] = {
   init: function () {
