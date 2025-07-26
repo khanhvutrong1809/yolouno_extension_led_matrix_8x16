@@ -1,19 +1,18 @@
-# tm1640_matrix.py
 from micropython import const
 from machine import Pin
 from time import sleep_us
 
-TM1640_CMD1 = const(0x40)  # Data command
-TM1640_CMD2 = const(0xC0)  # Address command
-TM1640_CMD3 = const(0x80)  # Display control command
-TM1640_DSP_ON = const(0x08)
-TM1640_DELAY = const(10)   # microseconds delay
+TM1640_CMD1 = const(64)   # 0x40: data command
+TM1640_CMD2 = const(192)  # 0xC0: address command
+TM1640_CMD3 = const(128)  # 0x80: display control command
+TM1640_DSP_ON = const(8)  # 0x08: display on
+TM1640_DELAY = const(10)  # 10us delay
 
-class TM1640:
+class TM1640(object):
+    """Library for LED matrix display modules based on the TM1640 LED driver."""
     def __init__(self, clk, dio, brightness=7):
         self.clk = clk
         self.dio = dio
-        self.buffer = bytearray(16)  # 16 columns (8x16 matrix)
 
         if not 0 <= brightness <= 7:
             raise ValueError("Brightness out of range")
@@ -27,23 +26,17 @@ class TM1640:
         self._write_dsp_ctrl()
 
     def _start(self):
-        self.dio(1)
-        self.clk(1)
-        sleep_us(TM1640_DELAY)
         self.dio(0)
         sleep_us(TM1640_DELAY)
         self.clk(0)
         sleep_us(TM1640_DELAY)
 
     def _stop(self):
-        self.clk(0)
-        sleep_us(TM1640_DELAY)
         self.dio(0)
         sleep_us(TM1640_DELAY)
         self.clk(1)
         sleep_us(TM1640_DELAY)
         self.dio(1)
-        sleep_us(TM1640_DELAY)
 
     def _write_data_cmd(self):
         self._start()
@@ -65,12 +58,49 @@ class TM1640:
             sleep_us(TM1640_DELAY)
 
     def brightness(self, val=None):
+        """Set the display brightness 0-7."""
         if val is None:
             return self._brightness
         if not 0 <= val <= 7:
             raise ValueError("Brightness out of range")
+
         self._brightness = val
+        self._write_data_cmd()
         self._write_dsp_ctrl()
+
+    def write_int(self, int, pos=0, len=8):
+        self.write(int.to_bytes(len, 'big'), pos)
+
+    def write_hmsb(self, buf, pos=0):
+        self._write_data_cmd()
+        self._start()
+
+        self._write_byte(TM1640_CMD2 | pos)
+        for i in range(7 - pos, -1, -1):
+            self._write_byte(buf[i])
+
+        self._stop()
+        self._write_dsp_ctrl()
+
+    def write(self, rows, pos=0):
+        if not 0 <= pos <= 15:
+            raise ValueError("Position out of range")
+
+        # Hoán đổi cột 7 và 8 nếu đủ 8 byte
+        data = list(rows)
+        if len(data) >= 8:
+            data[6], data[7] = data[7], data[6]
+
+        self._write_data_cmd()
+        self._start()
+
+        self._write_byte(TM1640_CMD2 | pos)
+        for row in data:
+            self._write_byte(row)
+
+        self._stop()
+        self._write_dsp_ctrl()
+
 
     def clear(self):
         self.buffer = bytearray(16)
