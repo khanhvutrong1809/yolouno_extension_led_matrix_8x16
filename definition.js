@@ -91,6 +91,7 @@ Blockly.Blocks["uno_led_matrix_create"] = {
     return ["led_matrix"];
   },
 };
+
 Blockly.Blocks["uno_led_matrix_show_adv_image"] = {
   init: function () {
     this.jsonInit({
@@ -235,30 +236,14 @@ Blockly.Python["uno_led_matrix_create"] = function (block) {
   var code = '';
   return code;
 };
-Blockly.Blocks["uno_led_matrix_show_adv_image"] = {
-  init: function () {
-    this.jsonInit({
-      colour: LEDMATRIX16x8ColorBlock,
-      nextStatement: null,
-      tooltip: 'Click vào để thay đổi hình ảnh',
-      message0: 'led matrix hiện hình ảnh %1',
-      previousStatement: null,
-      args0: [
-        {
-          type: "field_matrix_image",
-          name: "matrix_image",
-          src: [0, 0, 0, 0, 60, 66, 149, 161, 161, 149, 66, 60, 0, 0, 0, 0],
-          width: 50,
-          height: 25,
-          cols: 16,
-          rows: 8,
-          alt: "*",
-        },
-      ],
-      helpUrl: ''
-    });
-  },
+
+Blockly.Python['uno_led_matrix_show_adv_image'] = function (block) {
+  var matrix_image = block.getFieldValue('matrix_image');
+  matrix_image = `[${matrix_image.toString()}]`;
+  var code = 'led_matrix.show(' + matrix_image + ')\n';
+  return code;
 };
+
 Blockly.Python['uno_led_matrix_show_image'] = function (block) {
   var value_image = Blockly.Python.valueToCode(block, 'image', Blockly.Python.ORDER_MEMBER);
   var code = 'led_matrix.show(' + value_image + ')\n';
