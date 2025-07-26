@@ -159,12 +159,22 @@ Blockly.Blocks["uno_led_matrix_scan"] = {
   init: function () {
     this.jsonInit({
       type: "uno_led_matrix_scan",
-      message0: "led matrix quét LED với độ trễ %1 ms",
+      message0: "led matrix quét hình ảnh %1 với độ trễ %2 ms", // Updated message to include image placeholder
       args0: [
+        {
+          type: "field_matrix_image", // New image field
+          name: "matrix_image",
+          src: [0, 0, 0, 0, 60, 66, 149, 161, 161, 149, 66, 60, 0, 0, 0, 0], // Default heart image
+          width: 50,
+          height: 25,
+          cols: 16,
+          rows: 8,
+          alt: "*",
+        },
         {
           type: "field_number",
           name: "DELAY",
-          value: 50, // Giá trị mặc định cho độ trễ
+          value: 50, // Default value for delay
           min: 1,
           precision: 1,
         },
@@ -172,7 +182,7 @@ Blockly.Blocks["uno_led_matrix_scan"] = {
       previousStatement: null,
       nextStatement: null,
       colour: LEDMATRIX16x8ColorBlock,
-      tooltip: "Bật từng đèn LED một trên ma trận.",
+      tooltip: "Quét từng LED của hình ảnh đã chọn trên ma trận với độ trễ.", // Updated tooltip
       helpUrl: "",
     });
   },
