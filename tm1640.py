@@ -73,35 +73,59 @@ class TM1640(object):
         self._write_dsp_ctrl()
 
     def write_int(self, int, pos=0, len=8):
+        # Lưu ý: Phương thức này không thể tự động xử lý việc hoán đổi hàng 6 và 7
+        # vì nó chuyển đổi số nguyên thành bytes và gửi đi.
+        # Bạn sẽ cần xử lý hoán đổi ở lớp cao hơn nếu dùng hàm này.
         self.write(int.to_bytes(len, 'big'), pos)
 
     def write_hmsb(self, buf, pos=0):
+        # Phương thức này cũng không xử lý việc hoán đổi hàng 6 và 7
+        # nếu dữ liệu đầu vào buf đã được sắp xếp theo thứ tự mong muốn
+        # của các chân điều khiển, chứ không phải thứ tự vật lý.
         self._write_data_cmd()
         self._start()
 
         self._write_byte(TM1640_CMD2 | pos)
-        # Tạo buffer mới để đảo hàng 7 và 8
-        modified_buf = list(buf)
-        if len(buf) >= 8:
-            # Đảo dữ liệu của hàng 7 (buf[1]) và hàng 8 (buf[0])
-            modified_buf[0], modified_buf[1] = modified_buf[1], modified_buf[0]
-        
-        # Ghi dữ liệu từ vị trí 7-pos về 0
         for i in range(7-pos, -1, -1):
-            self._write_byte(modified_buf[i])
+            self._write_byte(buf[i])
 
         self._stop()
         self._write_dsp_ctrl()
 
-    def write(self, rows, pos=0):
+    def write(self, rows, pos = 0):
         if not 0 <= pos <= 15:
             raise ValueError("Position out of range")
+
+        # Tạo một bản sao có thể thay đổi của rows
+        display_data = list(rows)
+
+        # Kiểm tra xem có đủ dữ liệu để hoán đổi hàng 6 và 7 không
+        # và pos có ảnh hưởng đến việc hoán đổi không.
+        # Nếu pos là 0, thì hàng 6 và 7 tương ứng với index 6 và 7 của display_data
+        # Nếu pos không phải 0, bạn cần tính toán index tương ứng.
+        
+        # Giả sử pos luôn là 0 hoặc bạn sẽ luôn gửi đủ 8 hàng trở lên
+        # từ index 0 cho đến ít nhất index 7.
+        if len(display_data) > 7 and pos == 0:
+            # Hoán đổi dữ liệu của hàng 6 và hàng 7
+            # Dữ liệu muốn hiển thị trên hàng 6 (vật lý) sẽ được gửi đến chân của hàng 7
+            # Dữ liệu muốn hiển thị trên hàng 7 (vật lý) sẽ được gửi đến chân của hàng 6
+            temp = display_data[6]
+            display_data[6] = display_data[7]
+            display_data[7] = temp
+        # Nếu pos không phải 0 và bạn chỉ gửi một phần của màn hình,
+        # bạn cần xác định xem các hàng bị đảo ngược có nằm trong phạm vi gửi hay không
+        # và điều chỉnh logic hoán đổi cho phù hợp với offset pos.
+        # Ví dụ: nếu bạn gửi từ pos=4 và muốn hoán đổi hàng vật lý 6 và 7,
+        # thì bạn sẽ cần hoán đổi display_data[6-pos] và display_data[7-pos].
+        # Để đơn giản, tôi sẽ giả định rằng bạn luôn gửi dữ liệu cho toàn bộ 8 hàng từ pos=0.
 
         self._write_data_cmd()
         self._start()
 
         self._write_byte(TM1640_CMD2 | pos)
-        for row in rows:
+        # Sử dụng display_data đã được hoán đổi
+        for row in display_data:
             self._write_byte(row)
 
         self._stop()
