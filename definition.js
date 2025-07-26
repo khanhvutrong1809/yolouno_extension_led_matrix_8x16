@@ -247,42 +247,6 @@ Blockly.Blocks["uno_led_matrix_test_led"] = {
     return ["led_matrix"];
   },
 };
-Blockly.Blocks["uno_led_matrix_firework_effect"] = {
-  init: function () {
-    this.jsonInit({
-      colour: LEDMATRIX16x8ColorBlock, // Keep consistent color with other LED matrix blocks
-      nextStatement: null,
-      tooltip: "Tạo hiệu ứng pháo hoa rơi trên ma trận LED.",
-      message0: "led matrix hiệu ứng pháo hoa rơi với tốc độ %1 và số hạt %2",
-      previousStatement: null,
-      args0: [
-        {
-          type: "field_number",
-          name: "SPEED", // Fall speed of the fireworks
-          value: 50, // Default value (ms)
-          min: 10,
-          max: 200,
-          precision: 1,
-        },
-        {
-          type: "field_number",
-          name: "NUM_PARTICLES", // Number of "particles" in the falling firework
-          value: 5, // Default value
-          min: 1,
-          max: 10,
-          precision: 1,
-        },
-      ],
-      helpUrl: "",
-    });
-  },
-  getDeveloperVars: function () {
-    return ["led_matrix"]; // Global variable (if any) to control the LED matrix
-  },
-};
-
-// Python
-
 Blockly.Python["uno_led_matrix_create"] = function (block) {
   var dropdown_clk = block.getFieldValue("CLK");
   var dropdown_data = block.getFieldValue("DATA");
