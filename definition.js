@@ -247,7 +247,39 @@ Blockly.Blocks["uno_led_matrix_test_led"] = {
     return ["led_matrix"];
   },
 };
-
+Blockly.Blocks["uno_led_matrix_firework_effect"] = {
+  init: function () {
+    this.jsonInit({
+      colour: LEDMATRIX16x8ColorBlock, // Giữ màu sắc nhất quán với các khối LED matrix khác
+      nextStatement: null,
+      tooltip: "Tạo hiệu ứng pháo hoa rơi trên ma trận LED.",
+      message0: "led matrix hiệu ứng pháo hoa rơi với tốc độ %1 và số hạt %2",
+      previousStatement: null,
+      args0: [
+        {
+          type: "field_number",
+          name: "SPEED", // Tốc độ rơi của pháo hoa
+          value: 50,    // Giá trị mặc định (ms)
+          min: 10,
+          max: 200,
+          precision: 1,
+        },
+        {
+          type: "field_number",
+          name: "NUM_PARTICLES", // Số lượng "hạt" pháo hoa rơi
+          value: 5,               // Giá trị mặc định
+          min: 1,
+          max: 10,
+          precision: 1,
+        },
+      ],
+      helpUrl: "",
+    });
+  },
+  getDeveloperVars: function () {
+    return ["led_matrix"]; // Biến toàn cục (nếu có) để điều khiển LED matrix
+  },
+};
 
 // Python
 
