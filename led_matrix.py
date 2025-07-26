@@ -2,9 +2,6 @@ import time
 import tm1640
 import machine
 
-# from setting import * # Có thể gây lỗi nếu không có tệp này
-# from utility import * # Có thể gây lỗi nếu không có tệp này
-
 class Image:
     HEART = [0x00,0x00,0x00,0x0c,0x1e,0x3e,0x7e,0xfc, 0xfc,0x7e,0x3e,0x1e,0x0c,0x00,0x00,0x00]
     SMILE = [0x00,0x00,0x00,0x3c,0x42,0x91,0xa5,0xa1, 0xa1,0xa5,0x91,0x42,0x3c,0x00,0x00,0x00]
@@ -114,7 +111,7 @@ class Image:
 
     FULL = [0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff]
     NONE = [0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00]
-    PADDING = [0x00,0x00,0x00,0x00]
+    PADDING_COL = 0x00 # Một cột rỗng
 
 class LedMatrix:
     def __init__(self, clk, dio):
@@ -122,113 +119,155 @@ class LedMatrix:
         clk_pin = machine.Pin(clk)
         self.tm1640 = tm1640.TM1640(clk=clk_pin, dio=dio_pin)
         
-        self.list_dis_num = []
-        self.list_scroll = []
-        self.list_scroll_temp = []
-        self.list_show = []
+    def _scroll_bitmap_animation(self, bitmap_data, direction=0, delay=100):
+        """
+        Cuộn một bitmap 16x8 pixel qua màn hình.
+        bitmap_data: Một list/bytearray 16 byte, mỗi byte đại diện cho một cột.
+        direction: 0 cho phải sang trái, 1 cho trái sang phải.
+        """
+        # Đảm bảo bitmap_data có đúng 16 cột
+        if len(bitmap_data) != 16:
+            print("Error: Bitmap data must be 16 bytes for full screen scroll.")
+            return
 
-    def _scroll_image(self, image, dir=0, delay=100):
-        self.list_scroll.extend(image)
-        self.list_scroll_temp.extend(image)
-        
-        if dir == 0: # Cuộn từ phải sang trái
-            for i in range(8):
-                self.list_scroll.pop(0)
-                self.list_scroll.append(Image.PADDING[0])
-                self.tm1640.write(self.list_scroll)
+        if direction == 0:  # Cuộn từ phải sang trái
+            # Cuộn vào từ phải
+            for i in range(16):
+                display_buffer = bytearray(16)
+                # Đưa phần của bitmap vào màn hình
+                for j in range(16 - i):
+                    display_buffer[j + i] = bitmap_data[j]
+                self.tm1640.draw_bitmap(display_buffer)
                 time.sleep_ms(delay)
             
+            # Cuộn ra sang trái
             for i in range(16):
-                temp = self.list_scroll_temp[i]
-                self.list_scroll.pop(0)
-                self.list_scroll.append(temp)
-                self.tm1640.write(self.list_scroll)
+                display_buffer = bytearray(16)
+                for j in range(16 - i):
+                    display_buffer[j] = bitmap_data[j + i]
+                self.tm1640.draw_bitmap(display_buffer)
                 time.sleep_ms(delay)
-        else: # Cuộn từ trái sang phải
+        else:  # Cuộn từ trái sang phải
+            # Cuộn vào từ trái
             for i in range(16):
-                temp = Image.PADDING[0]
-                self.list_scroll.pop()
-                self.list_scroll.insert(0, temp)
-                self.tm1640.write(self.list_scroll)
+                display_buffer = bytearray(16)
+                for j in range(i + 1):
+                    display_buffer[j] = bitmap_data[15 - i + j]
+                self.tm1640.draw_bitmap(display_buffer)
                 time.sleep_ms(delay)
-            for i in range(15, -1, -1):
-                temp = self.list_scroll_temp[i]
-                self.list_scroll.pop()
-                self.list_scroll.insert(0, temp)
-                self.tm1640.write(self.list_scroll)
-                time.sleep_ms(delay)
-        self.list_scroll.clear()
-        self.list_scroll_temp.clear()
-    
-    def _check_len(self, input):
-        if len(input) > 2:
-            self.scroll(input, 0, 100)
-        else:
-            if len(input) == 1:
-                self.list_show.extend(Image.PADDING)
-                self.list_show.extend(Image.CHAR[input])
-                self.list_show.extend(Image.PADDING)
-                self.tm1640.write(self.list_show)
-                self.list_show.clear()
-            else:
-                for data in input:
-                    self.list_show.extend(Image.CHAR[data])
-                self.tm1640.write(self.list_show)
-                self.list_show.clear()
-
-    def scroll(self, input, dir = 0, delay = 100):
-        if type(input) is list:
-            self._scroll_image(input, dir, delay)
-        else:
-            output = str(input)  
-            self.list_scroll.extend(Image.NONE)         
-            for data in output:
-                self.list_scroll.extend(Image.CHAR[data])
             
-            self.list_scroll.extend(Image.NONE)
-            len_str =  len(output)
-            count = len_str*8 + 18 
-            self.list_scroll_temp.clear()
-            if dir == 0: # Cuộn từ phải sang trái
-                while count > 0:
-                    count = count - 1               
-                    self.list_scroll_temp.extend(self.list_scroll[0:16])
-                    self.list_scroll.pop(0)
-                    self.list_scroll.append(Image.PADDING[0])
-                    self.tm1640.write(self.list_scroll_temp)
-                    self.list_scroll_temp.clear()
+            # Cuộn ra sang phải
+            for i in range(16):
+                display_buffer = bytearray(16)
+                for j in range(16 - i):
+                    display_buffer[j + i] = bitmap_data[j]
+                self.tm1640.draw_bitmap(display_buffer)
+                time.sleep_ms(delay)
+
+    def _show_static_text(self, text_str):
+        self.tm1640.clear()
+        if len(text_str) == 1:
+            if text_str[0] in Image.CHAR:
+                # Căn giữa ký tự 8x8 trên ma trận 16 cột
+                self.tm1640.draw_char(Image.CHAR[text_str[0]], pos=4) 
+        elif len(text_str) == 2:
+            if text_str[0] in Image.CHAR and text_str[1] in Image.CHAR:
+                full_char_data = bytearray(16)
+                char1_data = Image.CHAR[text_str[0]]
+                char2_data = Image.CHAR[text_str[1]]
+                
+                for i in range(8):
+                    full_char_data[i] = char1_data[i]
+                    full_char_data[i+8] = char2_data[i]
+                
+                self.tm1640.draw_bitmap(full_char_data)
+        else:
+            # Nếu có nhiều hơn 2 ký tự, thì cuộn chúng
+            self.scroll(text_str)
+
+    def scroll(self, input_data, direction=0, delay=100):
+        """
+        Cuộn văn bản hoặc một bitmap.
+        input_data: Chuỗi văn bản hoặc list/bytearray 16 byte bitmap.
+        direction: 0 cho phải sang trái (mặc định), 1 cho trái sang phải.
+        delay: Độ trễ giữa các khung hình (miliseconds).
+        """
+        if isinstance(input_data, list) or isinstance(input_data, bytearray):
+            # Nếu là bitmap (list of bytes), sử dụng animation cuộn ảnh
+            self._scroll_bitmap_animation(input_data, direction, delay)
+        elif isinstance(input_data, str):
+            # Nếu là chuỗi, chuẩn bị dữ liệu cuộn
+            output_str = str(input_data)  
+            
+            # Tạo một buffer đủ lớn để chứa toàn bộ chuỗi cộng với đệm
+            # 16 cột đệm ở mỗi bên để cuộn vào và ra hoàn chỉnh
+            padding_cols = 16 
+            total_cols_needed = len(output_str) * 8 + 2 * padding_cols
+            
+            # Khởi tạo buffer cuộn với các cột trống
+            full_scroll_buffer = bytearray(total_cols_needed)
+
+            # Điền dữ liệu ký tự vào buffer cuộn sau phần đệm bên trái
+            current_pos = padding_cols
+            for char_val in output_str:
+                if char_val in Image.CHAR:
+                    char_bitmap = Image.CHAR[char_val]
+                    for i in range(8):
+                        full_scroll_buffer[current_pos + i] = char_bitmap[i]
+                    current_pos += 8
+                else:
+                    # Xử lý ký tự không xác định nếu cần, ví dụ: thêm khoảng trắng
+                    for i in range(8):
+                        full_scroll_buffer[current_pos + i] = Image.CHAR[' '][i]
+                    current_pos += 8
+
+            # Cuộn qua buffer
+            if direction == 0: # Cuộn từ phải sang trái
+                # Bắt đầu hiển thị từ cuối chuỗi đệm
+                for i in range(total_cols_needed - 16): 
+                    display_segment = full_scroll_buffer[i : i + 16]
+                    self.tm1640.draw_bitmap(display_segment)
                     time.sleep_ms(delay)
             else: # Cuộn từ trái sang phải
-                while count > 0:
-                    count = count - 1
-                    self.list_scroll_temp.extend(self.list_scroll[(len_str*8 + 16):(len_str*8 + 32)])
-                    self.list_scroll.pop()
-                    self.list_scroll.insert(0, Image.PADDING[0])
-                    self.tm1640.write(self.list_scroll_temp)
-                    self.list_scroll_temp.clear()
+                # Bắt đầu hiển thị từ đầu chuỗi cuộn, di chuyển về phía đầu
+                for i in range(total_cols_needed - 16, -1, -1):
+                    display_segment = full_scroll_buffer[i : i + 16]
+                    self.tm1640.draw_bitmap(display_segment)
                     time.sleep_ms(delay)
+            
+            self.tm1640.clear() # Xóa ma trận sau khi cuộn
 
-            self.list_scroll.clear()
-
-    def show(self, input):
-        if type(input) is list:
-            self.tm1640.write(input)
+    def show(self, input_data):
+        """
+        Hiển thị một bitmap hoặc văn bản tĩnh.
+        input_data: list/bytearray 16 byte (cho bitmap) hoặc chuỗi văn bản.
+        """
+        if isinstance(input_data, list) or isinstance(input_data, bytearray):
+            # Giả định input_data là 16 byte bitmap cho ma trận 16 cột
+            if len(input_data) == 16:
+                self.tm1640.draw_bitmap(input_data)
+            else:
+                print("Error: Bitmap list must be 16 bytes long.")
+        elif isinstance(input_data, str):
+            self._show_static_text(input_data)
         else:
-            output = str(input)
-            self._check_len(output)
+            print("Error: Invalid input type for show. Must be list/bytearray or string.")
 
     def clear(self):
-        self.tm1640.write(Image.NONE)
+        self.tm1640.clear()
 
     def scan_leds(self, delay=50):
-        self.clear() # Đảm bảo màn hình trống trước khi bắt đầu quét
+        """
+        Quét từng đèn LED trên ma trận để kiểm tra hoạt động.
+        """
+        self.clear()
         for row in range(8):
             for col in range(16):
-                display_data = [0x00] * 16
-                display_data[col] = 1 << row
-                self.tm1640.write(display_data)
+                self.tm1640.set_pixel(row, col, 1) # Bật pixel (hàng, cột)
+                self.tm1640.show() # Hiển thị thay đổi
                 time.sleep_ms(delay)
-        self.clear() # Xóa ma trận sau khi quét
+                self.tm1640.set_pixel(row, col, 0) # Tắt pixel
+        self.clear()
 
     def test_individual_led(self, row, col, duration=500):
         """
@@ -241,9 +280,8 @@ class LedMatrix:
             print("Lỗi: Vị trí hàng hoặc cột không hợp lệ.")
             return
 
-        self.clear() # Đảm bảo màn hình trống trước khi bật LED mới
-        display_data = [0x00] * 16
-        display_data[col] = 1 << row
-        self.tm1640.write(display_data)
+        self.clear()
+        self.tm1640.set_pixel(row, col, 1) # Bật pixel (hàng, cột)
+        self.tm1640.show() # Hiển thị
         time.sleep_ms(duration)
         self.clear() # Tắt đèn LED sau khi kiểm tra
