@@ -85,15 +85,31 @@ class TM1640:
         self._stop()
         self._write_dsp_ctrl()
 
-    def set_pixel(self, x, y, val):
-        if not (0 <= x < 16 and 0 <= y < 8):
+    # Phương thức mới để xử lý việc hoán đổi hàng và cột
+    def set_pixel(self, row, col, val):
+        """
+        Sets a pixel at the specified row and column.
+        row: 0-7 (for 8 rows)
+        col: 0-15 (for 16 columns)
+        val: 0 for off, 1 for on
+        """
+        # Kiểm tra giới hạn
+        if not (0 <= row < 8 and 0 <= col < 16):
             return
+
+        # Khi chân bị hoán đổi, 'col' thực tế là chỉ mục byte trong buffer (cột)
+        # và 'row' thực tế là bit trong byte đó (hàng).
         if val:
-            self.buffer[x] |= (1 << y)
+            self.buffer[col] |= (1 << row)
         else:
-            self.buffer[x] &= ~(1 << y)
+            self.buffer[col] &= ~(1 << row)
 
     def draw_bitmap(self, data):
+        """
+        Draws a 8x16 bitmap. `data` should be a 16-byte bytearray or list.
+        Each byte in `data` represents a column, and each bit in the byte
+        represents a row (LSB for row 0, MSB for row 7).
+        """
         for i in range(min(16, len(data))):
             self.buffer[i] = data[i]
         self.show()
@@ -110,11 +126,12 @@ class TM1640:
         self.buffer[0] = 0
         self.show()
 
-    def draw_char(self, char, font, pos=0):
-        if char not in font:
-            return
-        data = font[char]
-        for i in range(min(8, len(data))):
+    def draw_char(self, char_data, pos=0):
+        """
+        Draws an 8x8 character bitmap. `char_data` should be an 8-byte list/bytearray.
+        `pos` is the starting column (0-15).
+        """
+        for i in range(min(8, len(char_data))):
             if pos + i < 16:
-                self.buffer[pos + i] = data[i]
+                self.buffer[pos + i] = char_data[i]
         self.show()
