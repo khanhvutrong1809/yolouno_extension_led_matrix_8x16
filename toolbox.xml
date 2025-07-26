@@ -11,5 +11,6 @@
       </block>
     <block type="uno_led_matrix_scan"/>
     <block type="uno_led_matrix_test_led"></block>
+    <block type="uno_led_matrix_blink_image"></block>
   </category>
 </xml>
