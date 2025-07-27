@@ -1,0 +1,14 @@
+{
+    "name": "Led Matrix 16x8",
+    "description": "Mục mở rộng của Yolo UNO cho module led matrix 16x8",
+    "libs": [
+        "tm1640.py",
+        "led_matrix.py"
+    ],
+    "blocks": [
+        "definition.js"
+    ],
+    "toolbox": "toolbox.xml",
+    "languages": {},
+    "poster": "poster.png"
+}

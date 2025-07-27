@@ -1,0 +1,15 @@
+<xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
+  <category name="LED MATRIX" colour="#5d2c91" icon="h-square">
+    <block type="uno_led_matrix_create"/>
+    <block type="uno_led_matrix_show_adv_image" />
+    <block type="uno_led_matrix_display">
+        <value name="value">
+          <shadow type="text">
+            <field name="TEXT">0</field>
+          </shadow>
+        </value>
+      </block>
+    <block type="uno_led_matrix_scan"/>
+    <block type="uno_led_matrix_test_led"></block>
+  </category>
+</xml>
